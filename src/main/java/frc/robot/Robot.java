@@ -5,47 +5,37 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.RunCommand;
-import frc.robot.subsystems.Drivetrain;
-import org.photonvision.PhotonCamera;
+import frc.robot.subsystems.Arm;
 
 public class Robot extends TimedRobot {
-  private Command autonomousCommand;
-  private RobotContainer robotContainer;
+
+  private Arm arm;
+
+
+  XboxController xb = new XboxController(0);
+
 
   @Override
   public void robotInit() {
-    // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
-    // autonomous chooser on the dashboard.
-    this.robotContainer = new RobotContainer();
-//    this.bundleOfJoy = new Joystick(0);
+    this.arm = Arm.getInstance();
 
+
+    CommandScheduler.getInstance().registerSubsystem(this.arm);
   }
 
-
-  /**
-   * This method is called every 20 ms, no matter the mode. Use this for items like diagnostics
-   * that you want ran during disabled, autonomous, teleoperated and test.
-   *
-   * <p>This runs after the mode specific periodic methods, but before LiveWindow and
-   * SmartDashboard integrated updating.
-   */
   @Override
   public void robotPeriodic() {
-    // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
-    // commands, running already-scheduled commands, removing finished or interrupted commands,
-    // and running subsystem periodic() methods.  This must be called from the robot's periodic
-    // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+
+    SmartDashboard.putNumber("Time" /* with a capital T */, Timer.getFPGATimestamp());
   }
 
 
-  /** This method is called once each time the robot enters Disabled mode. */
   @Override
   public void disabledInit() {
 
@@ -57,21 +47,11 @@ public class Robot extends TimedRobot {
 
   }
 
-
-  /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
-//    autonomousCommand = robotContainer.getAutonomousCommand();
 
-    // schedule the autonomous command (example)
-    if (autonomousCommand != null)
-    {
-      autonomousCommand.schedule();
-    }
   }
 
-
-  /** This method is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
 
@@ -80,19 +60,9 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    // This makes sure that the autonomous stops running when
-    // teleop starts running. If you want the autonomous to
-    // continue until interrupted by another command, remove
-    // this line or comment it out.
-    if (autonomousCommand != null)
-    {
-      autonomousCommand.cancel();
-    }
-//    new RunCommand(() -> this.drive.curvatureDrive(bundleOfProblems.getLeftY(), bundleOfProblems.getRightX(), bundleOfProblems.getRawButton(1)), this.drive);
+
   }
 
-
-  /** This method is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
 //    var result = camera.getLatestResult();
@@ -101,31 +71,37 @@ public class Robot extends TimedRobot {
 //      System.out.println(result.getBestTarget());
 //    }
 //    System.out.println(enc.get());
+
+//    arm.testingSet(xb.getLeftY() * 0.5);
+
+    if (xb.getYButtonPressed()) {
+      arm.setRadians(Math.PI / 2.0);
+    }
+
+    if (xb.getBButtonPressed()) {
+      arm.setRadians(Math.PI);
+    }
   }
+
 
 
   @Override
   public void testInit() {
-    // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
   }
 
 
-  /** This method is called periodically during test mode. */
   @Override
   public void testPeriodic() {
 
   }
 
-
-  /** This method is called once when the robot is first started up. */
   @Override
   public void simulationInit() {
 
   }
 
 
-  /** This method is called periodically whilst in simulation. */
   @Override
   public void simulationPeriodic() {
 

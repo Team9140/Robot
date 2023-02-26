@@ -13,10 +13,13 @@ package frc.robot;
  * <p>It is advised to statically import this class (or one of its inner classes) wherever the
  * constants are needed, to reduce verbosity.
  */
-public final class Constants
-{
-    public static class OperatorConstants
-    {
-        public static final int DRIVER_CONTROLLER_PORT = 0;
-    }
+public final class Constants {
+  public static final double ARM_READY_DEADZONE = 0.25;
+  public static class OperatorConstants {
+    public static final int DRIVER_CONTROLLER_PORT = 0;
+  }
+
+  public static class Ports {
+    public static final int ARM_ENCODER_DIO = 9;
+  }
 }

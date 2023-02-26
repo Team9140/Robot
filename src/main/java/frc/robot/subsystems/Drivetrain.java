@@ -10,6 +10,8 @@ import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Drivetrain extends SubsystemBase {
+  private static Drivetrain instance;
+
   private final CANSparkMax frontLeft = new CANSparkMax(15, CANSparkMaxLowLevel.MotorType.kBrushless);
   private final CANSparkMax frontRight = new CANSparkMax(14, CANSparkMaxLowLevel.MotorType.kBrushless);
   private final CANSparkMax backLeft = new CANSparkMax(12, CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -27,7 +29,7 @@ public class Drivetrain extends SubsystemBase {
 //    new CANSparkMax(13, CANSparkMaxLowLevel.MotorType.kBrushless)  // Back  Right
 //  );
 
-  public Drivetrain() {
+  private Drivetrain() {
     frontLeft.setIdleMode(CANSparkMax.IdleMode.kCoast);
     backLeft.setIdleMode(CANSparkMax.IdleMode.kCoast);
     frontRight.setIdleMode(CANSparkMax.IdleMode.kCoast);
@@ -35,6 +37,10 @@ public class Drivetrain extends SubsystemBase {
 
     frontRight.setInverted(true);
     backRight.setInverted(true);
+  }
+
+  public static Drivetrain getInstance() {
+    return Drivetrain.instance == null ? Drivetrain.instance = new Drivetrain() : Drivetrain.instance;
   }
 
   

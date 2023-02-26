@@ -53,8 +53,9 @@ public class Arm extends SubsystemBase {
     this.motor.setSoftLimit(CANSparkMax.SoftLimitDirection.kReverse, -1.00f);
     this.motor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kReverse, true);
 
-    this.motor.getPIDController().setOutputRange(-0.5, 0.5);
-    this.motor.getPIDController().setP(0.8);
+    this.motor.getPIDController().setOutputRange(-0.75, 0.75);
+    this.motor.getPIDController().setP(8.68);
+    this.motor.getPIDController().setD(0.005);
 
     this.aps = new DutyCycleEncoder(Constants.Ports.ARM_ENCODER_DIO);
 //    this.aps.setDistancePerRotation(Math.PI * 2);
@@ -67,7 +68,7 @@ public class Arm extends SubsystemBase {
     this.currentArmState = ArmState.STARTUP;
     this.startUpTime = Timer.getFPGATimestamp();
 
-    this.tmp = new TorqueTMP(Math.PI * 1.0, Math.PI * 0.25);
+    this.tmp = new TorqueTMP(Math.PI * 1.5, Math.PI);
 
     this.setRadians(this.getMotorRadians());
   }
@@ -107,12 +108,11 @@ public class Arm extends SubsystemBase {
         if (this.goalChanged) {
           this.tmp.generateTrapezoid(this.targetPosition, this.getMotorRadians(), this.getMotorRadiansPerSecond());
           this.goalChanged = false;
+        } else {
+          this.tmp.calculateNextSituation(0.020);
+          this.profilePosition = this.tmp.getCurrentPosition();
+          this.motor.getPIDController().setReference(this.profilePosition, CANSparkMax.ControlType.kPosition);
         }
-
-        this.tmp.calculateNextSituation(0.020);
-        this.profilePosition = this.tmp.getCurrentPosition();
-        this.motor.getPIDController().setReference(this.profilePosition, CANSparkMax.ControlType.kPosition);
-
         break;
       case FAULT:
         break;
@@ -120,14 +120,16 @@ public class Arm extends SubsystemBase {
 
     this.currentArmState = nextArmState;
 
-    SmartDashboard.putString("Arm Current State", this.currentArmState.toString());
-    SmartDashboard.putNumber("APS (raw)", this.aps.getAbsolutePosition());
-    SmartDashboard.putNumber("APS (radians)", this.getAPSRadians());
-    SmartDashboard.putNumber("Motor (radians)", this.getMotorRadians());
-    SmartDashboard.putNumber("Difference (radians)", this.getAPSRadians() - this.getMotorRadians());
-    SmartDashboard.putNumber("Motor output (V)", this.motor.getAppliedOutput() * 12.0);
-    SmartDashboard.putNumber("profile pos", this.profilePosition);
-
+    SmartDashboard.putString("Arm State", this.currentArmState.toString());
+    SmartDashboard.putNumber("Arm APS (raw)", this.aps.getAbsolutePosition());
+    SmartDashboard.putNumber("Arm APS (radians)", this.getAPSRadians());
+    SmartDashboard.putNumber("Arm NEO (radians)", this.getMotorRadians());
+    SmartDashboard.putNumber("Arm Motor / APS Difference (radians)", this.getAPSRadians() - this.getMotorRadians());
+    SmartDashboard.putNumber("Arm position target (radians)", this.targetPosition);
+    SmartDashboard.putNumber("Arm profile target (radians)", this.profilePosition);
+    SmartDashboard.putNumber("Arm Output (V)", this.motor.getAppliedOutput() * 12.0);
+    SmartDashboard.putNumber("Arm Current (A)", this.motor.getOutputCurrent());
+    SmartDashboard.putNumber("Arm Temperature (C)", this.motor.getMotorTemperature());
   }
 
   public void testingSet(double val) {

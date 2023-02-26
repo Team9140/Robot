@@ -11,11 +11,14 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.Intake;
 
 public class Robot extends TimedRobot {
 
   private Arm arm;
-
+  private Drivetrain drive;
+  private Intake intake;
 
   XboxController xb = new XboxController(0);
 
@@ -23,7 +26,8 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     this.arm = Arm.getInstance();
-
+    this.drive = Drivetrain.getInstance();
+    this.intake = Intake.getInstance();
 
     CommandScheduler.getInstance().registerSubsystem(this.arm);
   }
@@ -75,12 +79,30 @@ public class Robot extends TimedRobot {
 //    arm.testingSet(xb.getLeftY() * 0.5);
 
     if (xb.getYButtonPressed()) {
-      arm.setRadians(Math.PI / 2.0);
+      arm.setRadians(0.503836);
     }
 
-    if (xb.getBButtonPressed()) {
-      arm.setRadians(Math.PI);
+    if (xb.getAButtonPressed()) {
+      arm.setRadians(3.845956);
     }
+
+    if (xb.getRightBumperPressed()) {
+      intake.setState(Intake.IntakeState.INTAKE_CONE);
+    }
+
+    if (xb.getRightBumperReleased()) {
+      intake.setState(Intake.IntakeState.HOLD);
+    }
+
+    if (xb.getStartButtonPressed()) {
+      intake.setState(Intake.IntakeState.THROW);
+    }
+
+    if (xb.getStartButtonReleased()) {
+      intake.setState(Intake.IntakeState.OFF);
+    }
+
+    drive.curvatureDrive(xb.getLeftY() * -1, xb.getRightX() * -1, xb.getRightStickButton());
   }
 
 

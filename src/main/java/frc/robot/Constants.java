@@ -14,19 +14,42 @@ package frc.robot;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-  public static class DrivetrainConstants {
+  public static class Drivetrain {
     public static final double DEADBAND = 0.02;
     public static final double WHEEL_GAIN = 0.05;
     public static final double WHEEL_NONLINEARITY = 0.05;
     public static final double TRACK_WIDTH_INCHES = 17.5;
-    public static final double TRACK_WIDTH_METERS = TRACK_WIDTH_INCHES * 0.0254;
+    public static final double TRACK_WIDTH_METERS = TRACK_WIDTH_INCHES * Units.METERS_PER_INCH;
+
+    public static final double DRIVE_RATIO = 8.45;
+
+    public static final double MOTOR_RPM = 5820.0;
+
+    public static final double WHEEL_DIAMETER = 6.0;
+
+    public static final double DRIVE_MAX_MPS = (MOTOR_RPM / DRIVE_RATIO / Units.SECONDS_PER_MINUTE) * WHEEL_DIAMETER * Math.PI * Units.METERS_PER_INCH;
+    public static final double POSITION_CONVERSION = (1 / DRIVE_RATIO) * WHEEL_DIAMETER * Math.PI * Units.METERS_PER_INCH;
+    public static final double VELOCITY_CONVERSION = POSITION_CONVERSION / Units.SECONDS_PER_MINUTE;
   }
 
-  public static class ArmPositions {
-    public static final double HIGH_NODE = Math.PI;
-    public static final double FLOOR = 0.0;
-    public static final double STOW = 0;
-    public static final double MID_NODE = 0;
+  public static class Arm {
+    public static class Positions {
+      public static final double HIGH_NODE = Math.PI;
+      public static final double FLOOR = 0.0;
+      public static final double STOW = 0;
+      public static final double MID_NODE = 0;
+    }
+
+    public static final double kS = 0;
+    public static final double kG = 0;
+    public static final double kV = 0;
+    public static final double kA = 0;
+
+    public static final double READY_DEADZONE = 0.25;
+
+    public static final double POSITION_CONVERSION = Constants.Units.RADIANS_PER_ROTATION * 2 / 100;
+
+    public static final double VELOCITY_CONVERSION = POSITION_CONVERSION / Units.SECONDS_PER_MINUTE;
   }
 
   public static class IntakeConstants {
@@ -41,12 +64,16 @@ public final class Constants {
     public static final double OFF = 0.0;
   }
 
-  public static final double ARM_READY_DEADZONE = 0.25;
-  public static class OperatorConstants {
-    public static final int DRIVER_CONTROLLER_PORT = 0;
+  public static class Ports {
+    public static final int CONTROLLER = 0;
+    public static final int ARM_ENCODER_DIO = 9;
   }
 
-  public static class Ports {
-    public static final int ARM_ENCODER_DIO = 9;
+  public static class Units {
+    public static final double SECONDS_PER_MINUTE = 60.0;
+
+    public static final double METERS_PER_INCH = 0.0254;
+
+    public static final double RADIANS_PER_ROTATION = 2 * Math.PI;
   }
 }

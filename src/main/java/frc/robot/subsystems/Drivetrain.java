@@ -5,19 +5,21 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import org.jetbrains.annotations.NotNull;
 
 public class Drivetrain extends SubsystemBase {
   private static Drivetrain instance;
 
   private final PigeonIMU gyro = new PigeonIMU(1);
 
-  private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Constants.DrivetrainConstants.TRACK_WIDTH_METERS);
+  private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Constants.Drivetrain.TRACK_WIDTH_METERS);
 
   private final static double deadband = 0.1;
 
@@ -29,6 +31,8 @@ public class Drivetrain extends SubsystemBase {
   private final MotorControllerGroup left = new MotorControllerGroup(backLeft, frontLeft);
   private final MotorControllerGroup right = new MotorControllerGroup(backRight, frontRight);
 
+  private SimpleMotorFeedforward feedforward;
+
 //  private final MotorControllerGroup left = new MotorControllerGroup(
 //    new CANSparkMax(15, CANSparkMaxLowLevel.MotorType.kBrushless), // Front Left
 //    new CANSparkMax(12, CANSparkMaxLowLevel.MotorType.kBrushless)  // Back  Left
@@ -39,35 +43,53 @@ public class Drivetrain extends SubsystemBase {
 //  );
 
   private Drivetrain() {
+    this.feedforward = new SimpleMotorFeedforward(0, 0);
+
     frontLeft.setIdleMode(CANSparkMax.IdleMode.kCoast);
     backLeft.setIdleMode(CANSparkMax.IdleMode.kCoast);
     frontRight.setIdleMode(CANSparkMax.IdleMode.kCoast);
     backRight.setIdleMode(CANSparkMax.IdleMode.kCoast);
 
+    frontLeft.setInverted(false);
+    backLeft.setInverted(false);
     frontRight.setInverted(true);
     backRight.setInverted(true);
+
+    frontLeft.getEncoder().setPositionConversionFactor(Constants.Drivetrain.POSITION_CONVERSION);
+    frontLeft.getEncoder().setVelocityConversionFactor(Constants.Drivetrain.VELOCITY_CONVERSION);
+    frontRight.getEncoder().setPositionConversionFactor(Constants.Drivetrain.POSITION_CONVERSION);
+    frontRight.getEncoder().setVelocityConversionFactor(Constants.Drivetrain.VELOCITY_CONVERSION);
   }
 
   public static Drivetrain getInstance() {
-    return Drivetrain.instance == null ? Drivetrain.instance = new Drivetrain() : Drivetrain.instance;
+    return frc.robot.subsystems.Drivetrain.instance == null ? frc.robot.subsystems.Drivetrain.instance = new Drivetrain() : frc.robot.subsystems.Drivetrain.instance;
   }
 
-  private final double kDenominator = Math.sin(Math.PI / 2.0 * Constants.DrivetrainConstants.WHEEL_NONLINEARITY);
+  private final double kDenominator = Math.sin(Math.PI / 2.0 * Constants.Drivetrain.WHEEL_NONLINEARITY);
 
   public void curvatureDriveNotCheesyFSFS(double throttle, double wheel, boolean quickTurn) {
-    throttle = MathUtil.applyDeadband(throttle, Constants.DrivetrainConstants.DEADBAND);
-    wheel = MathUtil.applyDeadband(wheel, Constants.DrivetrainConstants.DEADBAND);
+    throttle = MathUtil.applyDeadband(throttle, Constants.Drivetrain.DEADBAND);
+    wheel = MathUtil.applyDeadband(wheel, Constants.Drivetrain.DEADBAND);
 
     if (!quickTurn) {
-      wheel = Math.sin(Math.PI / 2.0 * Constants.DrivetrainConstants.WHEEL_NONLINEARITY * wheel);
-      wheel = Math.sin(Math.PI / 2.0 * Constants.DrivetrainConstants.WHEEL_NONLINEARITY * wheel);
+      wheel = Math.sin(Math.PI / 2.0 * Constants.Drivetrain.WHEEL_NONLINEARITY * wheel);
+      wheel = Math.sin(Math.PI / 2.0 * Constants.Drivetrain.WHEEL_NONLINEARITY * wheel);
       wheel = wheel / (kDenominator * kDenominator) * Math.abs(throttle);
     }
 
-    wheel *= Constants.DrivetrainConstants.WHEEL_GAIN;
-    DifferentialDriveWheelSpeeds signal = kinematics.toWheelSpeeds(new ChassisSpeeds(throttle, 0.0, wheel));
-    signal.desaturate(1);
-    this.left.set(signal.leftMetersPerSecond);
-    this.right.set(signal.rightMetersPerSecond);
+    double vx = throttle * Constants.Drivetrain.DRIVE_MAX_MPS;
+    double omega = wheel * Constants.Drivetrain.WHEEL_GAIN;
+
+    DifferentialDriveWheelSpeeds wheels = kinematics.toWheelSpeeds(new ChassisSpeeds(vx, 0.0, omega));
+
+
+    setOpenLoopWheelSpeed(wheels);
   }
+
+  public void setOpenLoopWheelSpeed(@NotNull DifferentialDriveWheelSpeeds speed) {
+    left.setVoltage(speed.leftMetersPerSecond / Constants.Drivetrain.DRIVE_MAX_MPS * 12);
+    right.setVoltage(speed.rightMetersPerSecond / Constants.Drivetrain.DRIVE_MAX_MPS * 12);
+  }
+
 }
+

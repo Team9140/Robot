@@ -21,7 +21,7 @@ public class Robot extends TimedRobot {
   private Drivetrain drive;
   private Intake intake;
 
-  CommandXboxController xb = new CommandXboxController(Constants.OperatorConstants.DRIVER_CONTROLLER_PORT);
+  CommandXboxController xb = new CommandXboxController(Constants.Ports.CONTROLLER);
 
   @Override
   public void robotInit() {
@@ -33,13 +33,13 @@ public class Robot extends TimedRobot {
     xb.leftBumper().onTrue(this.intake.intakeCube()).onFalse(this.intake.holdCube());
     xb.rightTrigger().onTrue(this.intake.throwItem()).onFalse(this.intake.off());
 
-    xb.y().onTrue(this.arm.setRadians(Constants.ArmPositions.HIGH_NODE));
-    xb.a().onTrue(this.arm.setRadians(Constants.ArmPositions.FLOOR));
-    xb.x().onTrue(this.arm.setRadians(Constants.ArmPositions.STOW));
-    xb.b().onTrue(this.arm.setRadians(Constants.ArmPositions.MID_NODE));
+    xb.y().onTrue(this.arm.setRadians(Constants.Arm.Positions.HIGH_NODE));
+    xb.a().onTrue(this.arm.setRadians(Constants.Arm.Positions.FLOOR));
+    xb.x().onTrue(this.arm.setRadians(Constants.Arm.Positions.STOW));
+    xb.b().onTrue(this.arm.setRadians(Constants.Arm.Positions.MID_NODE));
 
     drive.setDefaultCommand(Commands.run(() -> {
-      drive.curvatureDriveNotCheesyFSFS(-xb.getLeftY(), xb.getRightX(), xb.getHID().getRightStickButton());
+      drive.curvatureDriveNotCheesyFSFS(-xb.getLeftY(), -xb.getRightX(), xb.getLeftTriggerAxis() > 0.5);
     }, drive));
   }
 

@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -17,8 +18,9 @@ public class Arm extends SubsystemBase {
   private CANSparkMax motor;
   private DutyCycleEncoder aps;
 
+  private ArmFeedforward feedforward = new ArmFeedforward(Constants.Arm.kS, Constants.Arm.kG, Constants.Arm.kV, Constants.Arm.kA);
+
   private final TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(Math.PI * 2, Math.PI * 2);
-  // TODO: method to set angle (in radians), that should calculate new trapezoid profile
 
   private TrapezoidProfile.State armTargetState;
 
@@ -42,8 +44,8 @@ public class Arm extends SubsystemBase {
     this.motor.setSmartCurrentLimit(30);
     this.motor.setIdleMode(CANSparkMax.IdleMode.kBrake);
     this.motor.setInverted(false);
-    this.motor.getEncoder().setPositionConversionFactor(Math.PI * 2 / 100);
-    this.motor.getEncoder().setVelocityConversionFactor(Math.PI * 2 / 100 / 60.0);
+    this.motor.getEncoder().setPositionConversionFactor(Constants.Arm.POSITION_CONVERSION);
+    this.motor.getEncoder().setVelocityConversionFactor(Constants.Arm.VELOCITY_CONVERSION);
 
     this.motor.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, 3.85f);
     this.motor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, true);
@@ -88,21 +90,22 @@ public class Arm extends SubsystemBase {
       case STARTUP:
         if (time - this.startUpTime < 2.0) {
 
-        } else if (Math.abs(this.getAPSRadians() - this.getMotorRadians()) > Constants.ARM_READY_DEADZONE) {
+        } else if (Math.abs(this.getAPSRadians() - this.getMotorRadians()) > Constants.Arm.READY_DEADZONE) {
           this.motor.getEncoder().setPosition(this.getAPSRadians());
         } else {
           nextArmState = ArmState.POSITION;
         }
         break;
       case POSITION:
-        if (Math.abs(this.getAPSRadians() - this.getMotorRadians()) > Constants.ARM_READY_DEADZONE) {
+        if (Math.abs(this.getAPSRadians() - this.getMotorRadians()) > Constants.Arm.READY_DEADZONE) {
           nextArmState = ArmState.FAULT;
         }
 
+        double FF = feedforward.calculate(previousProfiledReference.position, previousProfiledReference.velocity);
         TrapezoidProfile profile = new TrapezoidProfile(constraints, armTargetState, previousProfiledReference);
         previousProfiledReference = profile.calculate(TimedRobot.kDefaultPeriod);
 
-        motor.getPIDController().setReference(previousProfiledReference.position, CANSparkMax.ControlType.kPosition);
+        motor.getPIDController().setReference(previousProfiledReference.position, CANSparkMax.ControlType.kPosition, 0, FF);
         break;
       case FAULT:
         break;

@@ -14,6 +14,33 @@ package frc.robot;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+  public static class DrivetrainConstants {
+    public static final double DEADBAND = 0.02;
+    public static final double WHEEL_GAIN = 0.05;
+    public static final double WHEEL_NONLINEARITY = 0.05;
+    public static final double TRACK_WIDTH_INCHES = 17.5;
+    public static final double TRACK_WIDTH_METERS = TRACK_WIDTH_INCHES * 0.0254;
+  }
+
+  public static class ArmPositions {
+    public static final double HIGH_NODE = Math.PI;
+    public static final double FLOOR = 0.0;
+    public static final double STOW = 0;
+    public static final double MID_NODE = 0;
+  }
+
+  public static class IntakeConstants {
+    public static final int INTAKE_CURRENT_LIMIT_AMPS = 25;
+    public static final int HOLD_CURRENT_LIMIT_AMPS = 5;
+    public static final double INTAKE_CONE_VOLTS = 12.0;
+    public static final double INTAKE_CUBE_VOLTS = -12.0;
+    public static final double HOLD_CONE_VOLTS = 2.0;
+    public static final double HOLD_CUBE_VOLTS = -2.0;
+    public static final double THROW_CONE_VOLTS = -12.0;
+    public static final double THROW_CUBE_VOLTS = 12.0;
+    public static final double OFF = 0.0;
+  }
+
   public static final double ARM_READY_DEADZONE = 0.25;
   public static class OperatorConstants {
     public static final int DRIVER_CONTROLLER_PORT = 0;

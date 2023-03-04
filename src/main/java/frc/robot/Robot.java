@@ -7,9 +7,10 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Intake;
@@ -20,8 +21,7 @@ public class Robot extends TimedRobot {
   private Drivetrain drive;
   private Intake intake;
 
-  XboxController xb = new XboxController(0);
-
+  CommandXboxController xb = new CommandXboxController(Constants.OperatorConstants.DRIVER_CONTROLLER_PORT);
 
   @Override
   public void robotInit() {
@@ -29,7 +29,18 @@ public class Robot extends TimedRobot {
     this.drive = Drivetrain.getInstance();
     this.intake = Intake.getInstance();
 
-    CommandScheduler.getInstance().registerSubsystem(this.arm);
+    xb.rightBumper().onTrue(this.intake.intakeCone()).onFalse(this.intake.holdCone());
+    xb.leftBumper().onTrue(this.intake.intakeCube()).onFalse(this.intake.holdCube());
+    xb.rightTrigger().onTrue(this.intake.throwItem()).onFalse(this.intake.off());
+
+    xb.y().onTrue(this.arm.setRadians(Constants.ArmPositions.HIGH_NODE));
+    xb.a().onTrue(this.arm.setRadians(Constants.ArmPositions.FLOOR));
+    xb.x().onTrue(this.arm.setRadians(Constants.ArmPositions.STOW));
+    xb.b().onTrue(this.arm.setRadians(Constants.ArmPositions.MID_NODE));
+
+    drive.setDefaultCommand(Commands.run(() -> {
+      drive.curvatureDriveNotCheesyFSFS(-xb.getLeftY(), xb.getRightX(), xb.getHID().getRightStickButton());
+    }, drive));
   }
 
   @Override
@@ -68,42 +79,7 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void teleopPeriodic() {
-//    var result = camera.getLatestResult();
-//    if (result.hasTargets()) {
-//      PhotonTrackedTarget t = ;
-//      System.out.println(result.getBestTarget());
-//    }
-//    System.out.println(enc.get());
-
-//    arm.testingSet(xb.getLeftY() * 0.5);
-
-    if (xb.getYButtonPressed()) {
-      arm.setRadians(0.503836);
-    }
-
-    if (xb.getAButtonPressed()) {
-      arm.setRadians(3.845956);
-    }
-
-    if (xb.getRightBumperPressed()) {
-      intake.setState(Intake.IntakeState.INTAKE_CONE);
-    }
-
-    if (xb.getRightBumperReleased()) {
-      intake.setState(Intake.IntakeState.HOLD);
-    }
-
-    if (xb.getStartButtonPressed()) {
-      intake.setState(Intake.IntakeState.THROW);
-    }
-
-    if (xb.getStartButtonReleased()) {
-      intake.setState(Intake.IntakeState.OFF);
-    }
-
-    drive.curvatureDrive(xb.getLeftY() * -1, xb.getRightX() * -1, xb.getRightStickButton());
-  }
+  public void teleopPeriodic() {}
 
 
 

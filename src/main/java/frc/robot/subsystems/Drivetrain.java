@@ -5,12 +5,21 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 
 public class Drivetrain extends SubsystemBase {
   private static Drivetrain instance;
+
+  private final PigeonIMU gyro = new PigeonIMU(1);
+
+  private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Constants.DrivetrainConstants.TRACK_WIDTH_METERS);
+
+  private final static double deadband = 0.1;
 
   private final CANSparkMax frontLeft = new CANSparkMax(15, CANSparkMaxLowLevel.MotorType.kBrushless);
   private final CANSparkMax frontRight = new CANSparkMax(14, CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -43,27 +52,22 @@ public class Drivetrain extends SubsystemBase {
     return Drivetrain.instance == null ? Drivetrain.instance = new Drivetrain() : Drivetrain.instance;
   }
 
-  
-  private final PigeonIMU gyro = new PigeonIMU(1);
+  private final double kDenominator = Math.sin(Math.PI / 2.0 * Constants.DrivetrainConstants.WHEEL_NONLINEARITY);
 
-  private final DifferentialDrive diffDrive = new DifferentialDrive(left, right);
+  public void curvatureDriveNotCheesyFSFS(double throttle, double wheel, boolean quickTurn) {
+    throttle = MathUtil.applyDeadband(throttle, Constants.DrivetrainConstants.DEADBAND);
+    wheel = MathUtil.applyDeadband(wheel, Constants.DrivetrainConstants.DEADBAND);
 
-  private final static double deadband = 0.1;
+    if (!quickTurn) {
+      wheel = Math.sin(Math.PI / 2.0 * Constants.DrivetrainConstants.WHEEL_NONLINEARITY * wheel);
+      wheel = Math.sin(Math.PI / 2.0 * Constants.DrivetrainConstants.WHEEL_NONLINEARITY * wheel);
+      wheel = wheel / (kDenominator * kDenominator) * Math.abs(throttle);
+    }
 
-  public void curvatureDrive(double speed, double rotation, boolean inplace) {
-//    speed = MathUtil.applyDeadband(speed, Drivetrain.deadband);
-//    rotation = MathUtil.applyDeadband(rotation, Drivetrain.deadband);
-//    if (inplace) {
-//      diffDrive.arcadeDrive(speed, rotation);
-//      return;
-//    }
-//    double leftSpeed = speed - Math.abs(speed) * rotation;
-//    double rightSpeed = speed + Math.abs(speed) * rotation;
-//    double maxMagnitude = Math.max(Math.abs(leftSpeed), Math.abs(rightSpeed));
-//    if (maxMagnitude > 1) {
-//      leftSpeed /= Math.max(rightSpeed, leftSpeed);
-//      rightSpeed /= Math.max(rightSpeed, leftSpeed);
-//    }
-    diffDrive.curvatureDrive(speed, rotation, inplace);
+    wheel *= Constants.DrivetrainConstants.WHEEL_GAIN;
+    DifferentialDriveWheelSpeeds signal = kinematics.toWheelSpeeds(new ChassisSpeeds(throttle, 0.0, wheel));
+    signal.desaturate(1);
+    this.left.set(signal.leftMetersPerSecond);
+    this.right.set(signal.rightMetersPerSecond);
   }
 }

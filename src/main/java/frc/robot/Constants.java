@@ -16,7 +16,7 @@ package frc.robot;
 public final class Constants {
   public static class Drivetrain {
     public static final double DEADBAND = 0.02;
-    public static final double WHEEL_GAIN = 0.05;
+    public static final double WHEEL_GAIN = 10.0;
     public static final double WHEEL_NONLINEARITY = 0.05;
     public static final double TRACK_WIDTH_INCHES = 17.5;
     public static final double TRACK_WIDTH_METERS = TRACK_WIDTH_INCHES * Units.METERS_PER_INCH;
@@ -30,24 +30,46 @@ public final class Constants {
     public static final double DRIVE_MAX_MPS = (MOTOR_RPM / DRIVE_RATIO / Units.SECONDS_PER_MINUTE) * WHEEL_DIAMETER * Math.PI * Units.METERS_PER_INCH;
     public static final double POSITION_CONVERSION = (1 / DRIVE_RATIO) * WHEEL_DIAMETER * Math.PI * Units.METERS_PER_INCH;
     public static final double VELOCITY_CONVERSION = POSITION_CONVERSION / Units.SECONDS_PER_MINUTE;
+
+    // Set the current limit, an integer in amps, for the drivetrain.
+    public static final boolean ENABLE_CURRENT_LIMIT = true;
+    public static final int CURRENT_LIMIT = 30;
+
+    public static class Feedforward {
+      public static class Left {
+        public static final double S = 0.11892;
+        public static final double V = 2.2116;
+        public static final double A = 0.11901;
+      }
+
+      public static class Right {
+        public static final double S = 0.11869;
+        public static final double V = 2.2123;
+        public static final double A = 0.14048;
+      }
+    }
   }
 
   public static class Arm {
     public static class Positions {
-      public static final double HIGH_NODE = Math.PI;
-      public static final double FLOOR = 0.0;
-      public static final double STOW = 0;
-      public static final double MID_NODE = 0;
+      public static final double HIGH_NODE = 0.643;
+      public static final double FLOOR = -0.937;
+      public static final double STOW = 3.854;
+      public static final double MID_NODE = 0.275;
     }
 
-    public static final double kS = 0;
-    public static final double kG = 0;
-    public static final double kV = 0;
-    public static final double kA = 0;
+    public static final double P = 3.6935;
+    public static final double I = 0.0;
+    public static final double D = 0.61277;
+
+    public static final double kS = 0.0;
+    public static final double kG = 0.0;
+    public static final double kV = 0.0;
+    public static final double kA = 0.0;
 
     public static final double READY_DEADZONE = 0.25;
 
-    public static final double POSITION_CONVERSION = Constants.Units.RADIANS_PER_ROTATION * 2 / 100;
+    public static final double POSITION_CONVERSION = Constants.Units.RADIANS_PER_ROTATION / 100.0;
 
     public static final double VELOCITY_CONVERSION = POSITION_CONVERSION / Units.SECONDS_PER_MINUTE;
   }
@@ -74,6 +96,6 @@ public final class Constants {
 
     public static final double METERS_PER_INCH = 0.0254;
 
-    public static final double RADIANS_PER_ROTATION = 2 * Math.PI;
+    public static final double RADIANS_PER_ROTATION = 2.0 * Math.PI;
   }
 }

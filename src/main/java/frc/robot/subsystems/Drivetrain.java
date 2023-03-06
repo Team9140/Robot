@@ -31,7 +31,8 @@ public class Drivetrain extends SubsystemBase {
   private final MotorControllerGroup left = new MotorControllerGroup(backLeft, frontLeft);
   private final MotorControllerGroup right = new MotorControllerGroup(backRight, frontRight);
 
-  private SimpleMotorFeedforward feedforward;
+  private SimpleMotorFeedforward left_feedforward;
+  private SimpleMotorFeedforward right_feedforward;
 
 //  private final MotorControllerGroup left = new MotorControllerGroup(
 //    new CANSparkMax(15, CANSparkMaxLowLevel.MotorType.kBrushless), // Front Left
@@ -43,12 +44,13 @@ public class Drivetrain extends SubsystemBase {
 //  );
 
   private Drivetrain() {
-    this.feedforward = new SimpleMotorFeedforward(0, 0);
+    this.left_feedforward = new SimpleMotorFeedforward(Constants.Drivetrain.Feedforward.Left.S, Constants.Drivetrain.Feedforward.Left.V, Constants.Drivetrain.Feedforward.Left.A);
+    this.right_feedforward = new SimpleMotorFeedforward(Constants.Drivetrain.Feedforward.Right.S, Constants.Drivetrain.Feedforward.Right.V, Constants.Drivetrain.Feedforward.Right.A);
 
-    frontLeft.setIdleMode(CANSparkMax.IdleMode.kCoast);
-    backLeft.setIdleMode(CANSparkMax.IdleMode.kCoast);
-    frontRight.setIdleMode(CANSparkMax.IdleMode.kCoast);
-    backRight.setIdleMode(CANSparkMax.IdleMode.kCoast);
+    frontLeft.setIdleMode(CANSparkMax.IdleMode.kBrake);
+    backLeft.setIdleMode(CANSparkMax.IdleMode.kBrake);
+    frontRight.setIdleMode(CANSparkMax.IdleMode.kBrake);
+    backRight.setIdleMode(CANSparkMax.IdleMode.kBrake);
 
     frontLeft.setInverted(false);
     backLeft.setInverted(false);
@@ -59,6 +61,13 @@ public class Drivetrain extends SubsystemBase {
     frontLeft.getEncoder().setVelocityConversionFactor(Constants.Drivetrain.VELOCITY_CONVERSION);
     frontRight.getEncoder().setPositionConversionFactor(Constants.Drivetrain.POSITION_CONVERSION);
     frontRight.getEncoder().setVelocityConversionFactor(Constants.Drivetrain.VELOCITY_CONVERSION);
+
+    if (Constants.Drivetrain.ENABLE_CURRENT_LIMIT) {
+      frontLeft.setSmartCurrentLimit(Constants.Drivetrain.CURRENT_LIMIT);
+      backLeft.setSmartCurrentLimit(Constants.Drivetrain.CURRENT_LIMIT);
+      frontRight.setSmartCurrentLimit(Constants.Drivetrain.CURRENT_LIMIT);
+      backRight.setSmartCurrentLimit(Constants.Drivetrain.CURRENT_LIMIT);
+    }
   }
 
   public static Drivetrain getInstance() {
@@ -87,8 +96,9 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public void setOpenLoopWheelSpeed(@NotNull DifferentialDriveWheelSpeeds speed) {
-    left.setVoltage(speed.leftMetersPerSecond / Constants.Drivetrain.DRIVE_MAX_MPS * 12);
-    right.setVoltage(speed.rightMetersPerSecond / Constants.Drivetrain.DRIVE_MAX_MPS * 12);
+//    leftVolts = ;
+    left.setVoltage(left_feedforward.calculate(speed.leftMetersPerSecond));
+    right.setVoltage(right_feedforward.calculate(speed.rightMetersPerSecond));
   }
 
 }

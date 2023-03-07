@@ -18,13 +18,13 @@ public class Arm extends SubsystemBase {
   private CANSparkMax motor;
   private DutyCycleEncoder aps;
 
-  private ArmFeedforward feedforward = new ArmFeedforward(Constants.Arm.kS, Constants.Arm.kG, Constants.Arm.kV, Constants.Arm.kA);
+  private ArmFeedforward feedforward = new ArmFeedforward(Constants.Arm.kS, Constants.Arm.kG, Constants.Arm.kV, +++Constants.Arm.kA);
 
   private final TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(Math.PI * 3, Math.PI);
 
   private volatile TrapezoidProfile.State armTargetState;
 
-  private volatile TrapezoidProfile.State previousProfiledReference;
+  private volatile TrapezoidProfile.State armCurrentState;
 
   public static Arm getInstance() {
     return (Arm.instance == null) ? Arm.instance = new Arm() : Arm.instance;
@@ -65,7 +65,7 @@ public class Arm extends SubsystemBase {
     this.startUpTime = Timer.getFPGATimestamp();
 
     this.armTargetState = new TrapezoidProfile.State(Constants.Arm.Positions.STOW, 0.0);
-    this.previousProfiledReference = new TrapezoidProfile.State(Constants.Arm.Positions.STOW, 0.0);
+    this.armCurrentState = new TrapezoidProfile.State(Constants.Arm.Positions.STOW, 0.0);
 
 //    this.setRadians(this.getMotorRadians());
   }
@@ -103,11 +103,11 @@ public class Arm extends SubsystemBase {
           nextArmState = ArmState.FAULT;
         }
 
-        double FF = feedforward.calculate(previousProfiledReference.position, previousProfiledReference.velocity);
-        TrapezoidProfile profile = new TrapezoidProfile(constraints, armTargetState, previousProfiledReference);
-        previousProfiledReference = profile.calculate(TimedRobot.kDefaultPeriod);
+        double FF = feedforward.calculate(armCurrentState.position, armCurrentState.velocity);
+        TrapezoidProfile profile = new TrapezoidProfile(constraints, armTargetState, armCurrentState);
+        armCurrentState = profile.calculate(TimedRobot.kDefaultPeriod);
 
-        motor.getPIDController().setReference(previousProfiledReference.position, CANSparkMax.ControlType.kPosition, 0, FF);
+        motor.getPIDController().setReference(armCurrentState.position, CANSparkMax.ControlType.kPosition, 0, FF);
         SmartDashboard.putNumber("debug", debugCounter++);
         break;
       case FAULT:
@@ -125,10 +125,16 @@ public class Arm extends SubsystemBase {
     SmartDashboard.putNumber("Arm Current (A)", this.motor.getOutputCurrent());
     SmartDashboard.putNumber("Arm Temperature (C)", this.motor.getMotorTemperature());
     SmartDashboard.putNumber("Arm Final Target (radians)", this.armTargetState.position);
-    SmartDashboard.putNumber("Arm Profile Target (radians)", this.previousProfiledReference.position);
+    SmartDashboard.putNumber("Arm Profile Target (radians)", this.armCurrentState.position);
   }
 
   public CommandBase setRadians(double rad) {
     return runOnce(() -> this.armTargetState = new TrapezoidProfile.State(rad, 0.0));
+  }
+
+  public void moveAndWait(double rad) {
+    this.setRadians(rad);
+
+    while (!(Math.abs(this.armTargetState.position - this.armCurrentState.position) < 0.1)) {}
   }
 }

@@ -12,6 +12,7 @@ import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.MovableSubsystem;
 import org.jetbrains.annotations.NotNull;
 
 public class Drivetrain extends SubsystemBase {
@@ -20,8 +21,6 @@ public class Drivetrain extends SubsystemBase {
   private final PigeonIMU gyro = new PigeonIMU(1);
 
   private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Constants.Drivetrain.TRACK_WIDTH_METERS);
-
-  private final static double deadband = 0.1;
 
   private final CANSparkMax frontLeft = new CANSparkMax(15, CANSparkMaxLowLevel.MotorType.kBrushless);
   private final CANSparkMax frontRight = new CANSparkMax(14, CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -34,14 +33,7 @@ public class Drivetrain extends SubsystemBase {
   private SimpleMotorFeedforward left_feedforward;
   private SimpleMotorFeedforward right_feedforward;
 
-//  private final MotorControllerGroup left = new MotorControllerGroup(
-//    new CANSparkMax(15, CANSparkMaxLowLevel.MotorType.kBrushless), // Front Left
-//    new CANSparkMax(12, CANSparkMaxLowLevel.MotorType.kBrushless)  // Back  Left
-//  );
-//  private final MotorControllerGroup right = new MotorControllerGroup(
-//    new CANSparkMax(14, CANSparkMaxLowLevel.MotorType.kBrushless), // Front Right
-//    new CANSparkMax(13, CANSparkMaxLowLevel.MotorType.kBrushless)  // Back  Right
-//  );
+
 
   private Drivetrain() {
     this.left_feedforward = new SimpleMotorFeedforward(Constants.Drivetrain.Feedforward.Left.S, Constants.Drivetrain.Feedforward.Left.V, Constants.Drivetrain.Feedforward.Left.A);
@@ -100,6 +92,5 @@ public class Drivetrain extends SubsystemBase {
     left.setVoltage(left_feedforward.calculate(speed.leftMetersPerSecond));
     right.setVoltage(right_feedforward.calculate(speed.rightMetersPerSecond));
   }
-
 }
 

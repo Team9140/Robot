@@ -11,6 +11,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.MovableSubsystem;
+import frc.robot.SingleMovementCommand;
 
 public class Arm extends SubsystemBase {
   private static Arm instance;
@@ -18,7 +20,7 @@ public class Arm extends SubsystemBase {
   private CANSparkMax motor;
   private DutyCycleEncoder aps;
 
-  private ArmFeedforward feedforward = new ArmFeedforward(Constants.Arm.kS, Constants.Arm.kG, Constants.Arm.kV, +++Constants.Arm.kA);
+  private ArmFeedforward feedforward = new ArmFeedforward(Constants.Arm.kS, Constants.Arm.kG, Constants.Arm.kV, Constants.Arm.kA);
 
   private final TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(Math.PI * 3, Math.PI);
 
@@ -128,13 +130,19 @@ public class Arm extends SubsystemBase {
     SmartDashboard.putNumber("Arm Profile Target (radians)", this.armCurrentState.position);
   }
 
-  public CommandBase setRadians(double rad) {
-    return runOnce(() -> this.armTargetState = new TrapezoidProfile.State(rad, 0.0));
+  public double getTargetStatePosition() {
+    return this.armTargetState.position;
+  };
+
+  public double getCurrentStatePosition() {
+    return this.armCurrentState.position;
   }
 
-  public void moveAndWait(double rad) {
-    this.setRadians(rad);
+  public CommandBase setRadians(double rad) {
+    return this.runOnce(() -> this.armTargetState = new TrapezoidProfile.State(rad, 0.0));
+  }
 
-    while (!(Math.abs(this.armTargetState.position - this.armCurrentState.position) < 0.1)) {}
+  public CommandBase setRadiansAndFinish(double rad) {
+    return this.setRadians(rad).until(() -> (Math.abs(this.getTargetStatePosition() - this.getCurrentStatePosition()) < 0.1));
   }
 }

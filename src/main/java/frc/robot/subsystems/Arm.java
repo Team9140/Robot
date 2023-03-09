@@ -11,8 +11,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.MovableSubsystem;
-import frc.robot.SingleMovementCommand;
 
 public class Arm extends SubsystemBase {
   private static Arm instance;
@@ -43,7 +41,7 @@ public class Arm extends SubsystemBase {
 
   private Arm() {
     this.motor = new CANSparkMax(10, CANSparkMaxLowLevel.MotorType.kBrushless);
-    this.motor.setSmartCurrentLimit(30);
+    this.motor.setSmartCurrentLimit(Constants.Arm.CURRENT_LIMIT);
     this.motor.setIdleMode(CANSparkMax.IdleMode.kBrake);
     this.motor.setInverted(true);
     this.motor.getEncoder().setPositionConversionFactor(Constants.Arm.POSITION_CONVERSION);
@@ -101,7 +99,7 @@ public class Arm extends SubsystemBase {
         }
         break;
       case POSITION:
-        if (Math.abs(this.getAPSRadians() - this.getMotorRadians()) > Constants.Arm.READY_DEADZONE) {
+        if (Math.abs(this.getAPSRadians() - this.getMotorRadians()) > Constants.Arm.FAULT_DEADZONE) {
           nextArmState = ArmState.FAULT;
         }
 

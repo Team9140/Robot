@@ -39,7 +39,8 @@ public class Robot extends TimedRobot {
     xb.b().onTrue(this.arm.setRadians(Constants.Arm.Positions.MID_NODE));
 
     drive.setDefaultCommand(Commands.run(() -> {
-      drive.curvatureDriveNotCheesyFSFS(-xb.getLeftY(), -xb.getRightX(), xb.getLeftTriggerAxis() > 0.5);
+      double turnMultiplier = (Math.sin(arm.getTargetStatePosition()) >= 0) ? Constants.Drivetrain.ARM_EXTENDED_TURN_MULTIPLIER : 1.0;
+      drive.curvatureDriveNotCheesyFSFS(-xb.getLeftY(), -xb.getRightX() * turnMultiplier, xb.getLeftTriggerAxis() > 0.5);
     }, drive));
   }
 

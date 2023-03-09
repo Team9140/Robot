@@ -12,7 +12,6 @@ import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.MovableSubsystem;
 import org.jetbrains.annotations.NotNull;
 
 public class Drivetrain extends SubsystemBase {
@@ -79,7 +78,7 @@ public class Drivetrain extends SubsystemBase {
     }
 
     double vx = throttle * Constants.Drivetrain.DRIVE_MAX_MPS;
-    double omega = wheel * Constants.Drivetrain.WHEEL_GAIN;
+    double omega = wheel * Constants.Drivetrain.WHEEL_TURN_GAIN;
 
     DifferentialDriveWheelSpeeds wheels = kinematics.toWheelSpeeds(new ChassisSpeeds(vx, 0.0, omega));
 

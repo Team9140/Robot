@@ -92,16 +92,18 @@ public class Arm extends SubsystemBase {
         if (time - this.startUpTime < 2.0) {
 
         } else if (Math.abs(this.getAPSRadians() - this.getMotorRadians()) > Constants.Arm.READY_DEADZONE) {
-          this.motor.getEncoder().setPosition(this.getAPSRadians());
+//          this.motor.getEncoder().setPosition(this.getAPSRadians());
+          this.motor.getEncoder().setPosition(Constants.Arm.Positions.STOW);
         } else {
+
           nextArmState = ArmState.POSITION;
           this.armTargetState = new TrapezoidProfile.State(Constants.Arm.Positions.STOW, 0.0);
         }
         break;
       case POSITION:
-        if (Math.abs(this.getAPSRadians() - this.getMotorRadians()) > Constants.Arm.FAULT_DEADZONE) {
-          nextArmState = ArmState.FAULT;
-        }
+//        if (Math.abs(this.getAPSRadians() - this.getMotorRadians()) > Constants.Arm.FAULT_DEADZONE) {
+//          nextArmState = ArmState.FAULT;
+//        }
 
         double FF = feedforward.calculate(armCurrentState.position, armCurrentState.velocity);
         TrapezoidProfile profile = new TrapezoidProfile(constraints, armTargetState, armCurrentState);
@@ -141,6 +143,6 @@ public class Arm extends SubsystemBase {
   }
 
   public CommandBase setRadiansAndFinish(double rad) {
-    return this.setRadians(rad).until(() -> (Math.abs(this.getTargetStatePosition() - this.getCurrentStatePosition()) < 0.1));
+    return this.setRadians(rad).until(() -> (Math.abs(this.getTargetStatePosition() - this.getCurrentStatePosition()) < 0.25));
   }
 }

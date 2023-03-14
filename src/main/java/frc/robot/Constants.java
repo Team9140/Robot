@@ -6,18 +6,22 @@
 package frc.robot;
 
 /**
- * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
- * constants. This class should not be used for any other purpose. All constants should be declared
+ * The Constants class provides a convenient place for teams to hold robot-wide
+ * numerical or boolean
+ * constants. This class should not be used for any other purpose. All constants
+ * should be declared
  * globally (i.e. public static). Do not put anything functional in this class.
  *
- * <p>It is advised to statically import this class (or one of its inner classes) wherever the
+ * <p>
+ * It is advised to statically import this class (or one of its inner classes)
+ * wherever the
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
   public static class Drivetrain {
-    public static final double DEADBAND = 0.02;
+    public static final double DEADBAND = 0.15;
     public static final double WHEEL_TURN_GAIN = 12.0;
-    public static final double WHEEL_NONLINEARITY = 0.05;
+    public static final double WHEEL_NONLINEARITY = 0.07;
     public static final double TRACK_WIDTH_INCHES = 17.5;
     public static final double TRACK_WIDTH_METERS = TRACK_WIDTH_INCHES * Units.METERS_PER_INCH;
 
@@ -27,15 +31,21 @@ public final class Constants {
 
     public static final double WHEEL_DIAMETER = 6.0;
 
-    public static final double DRIVE_MAX_MPS = (MOTOR_RPM / DRIVE_RATIO / Units.SECONDS_PER_MINUTE) * WHEEL_DIAMETER * Math.PI * Units.METERS_PER_INCH;
-    public static final double POSITION_CONVERSION = (1 / DRIVE_RATIO) * WHEEL_DIAMETER * Math.PI * Units.METERS_PER_INCH;
+    public static final double DRIVE_MAX_MPS = (MOTOR_RPM / DRIVE_RATIO / Units.SECONDS_PER_MINUTE) * WHEEL_DIAMETER
+        * Math.PI * Units.METERS_PER_INCH;
+    public static final double POSITION_CONVERSION = (1 / DRIVE_RATIO) * WHEEL_DIAMETER * Math.PI
+        * Units.METERS_PER_INCH;
     public static final double VELOCITY_CONVERSION = POSITION_CONVERSION / Units.SECONDS_PER_MINUTE;
 
     // Set the current limit, an integer in amps, for the drivetrain.
     public static final boolean ENABLE_CURRENT_LIMIT = true;
-    public static final int CURRENT_LIMIT = 50;
+    public static final int CURRENT_LIMIT = 40;
 
     public static final double ARM_EXTENDED_TURN_MULTIPLIER = 0.5;
+    public static final double ARM_STOW_TURN_MULTIPLIER = 1.0;
+    public static final double CHARGE_STATION_PITCH = 13;
+    public static final double LEVEL_PITCH = 6.0;
+    public static final double LIMITER = 0.5;
 
     public static class Feedforward {
       public static class Left {
@@ -54,12 +64,10 @@ public final class Constants {
 
   public static class Arm {
     public static class Positions {
-      public static final double HIGH_NODE = 0.803;
-
-      //      public static final double HIGH_NODE = 0.643;
-      public static final double FLOOR = -0.937;
       public static final double STOW = 3.854;
-      public static final double MID_NODE = 0.275;
+      public static final double HIGH_NODE = 0.616;
+      public static final double MID_NODE = 0.299604;
+      public static final double FLOOR = -1.0;
     }
 
     public static final double P = 3.6935;
@@ -71,7 +79,7 @@ public final class Constants {
     public static final double kV = 0.0;
     public static final double kA = 0.0;
 
-    public static final double READY_DEADZONE = 0.05;
+    public static final double READY_DEADZONE = 0.025;
     public static final double FAULT_DEADZONE = 0.25;
 
     public static final double POSITION_CONVERSION = Constants.Units.RADIANS_PER_ROTATION / 100.0;
@@ -82,12 +90,12 @@ public final class Constants {
   }
 
   public static class IntakeConstants {
-    public static final int INTAKE_CURRENT_LIMIT_AMPS = 30;
-    public static final int HOLD_CURRENT_LIMIT_AMPS = 5;
+    public static final int INTAKE_CURRENT_LIMIT_AMPS = 35;
+    public static final int HOLD_CURRENT_LIMIT_AMPS = 8;
     public static final double INTAKE_CONE_VOLTS = 12.0;
     public static final double INTAKE_CUBE_VOLTS = -8.0;
-    public static final double HOLD_CONE_VOLTS = 2.0;
-    public static final double HOLD_CUBE_VOLTS = -2.0;
+    public static final double HOLD_CONE_VOLTS = 3.0;
+    public static final double HOLD_CUBE_VOLTS = -3.0;
     public static final double THROW_CONE_VOLTS = -8.0;
     public static final double THROW_CUBE_VOLTS = 8.0;
     public static final double OFF = 0.0;
@@ -104,5 +112,13 @@ public final class Constants {
     public static final double METERS_PER_INCH = 0.0254;
 
     public static final double RADIANS_PER_ROTATION = 2.0 * Math.PI;
+  }
+
+  public static class Auto {
+
+    public static final double DRIVE_BACK_METERS = -5.0;
+    public static final double DRIVE_MPS = 1.0;
+    public static final double LEVEL_MPS = 0.5;
+
   }
 }
